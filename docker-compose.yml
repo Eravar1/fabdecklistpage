@@ -121,7 +121,7 @@ services:
       db:
         condition: service_healthy
     env_file:
-      - .env
+      - .env.production
     command: python init_db.py
     restart: on-failure
     profiles: ["run-once"]  # Only run when explicitly requested
@@ -132,7 +132,7 @@ services:
       init_db:
         condition: service_completed_successfully
     env_file:
-      - .env
+      - .env.production
     command: python scrape_all.py
     restart: on-failure
     profiles: ["run-once"]  # Only run when explicitly requested
