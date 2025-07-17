@@ -1,3 +1,64 @@
+# version: '3.8'
+
+# services:
+#   db:
+#     image: postgres:13
+#     environment:
+#       POSTGRES_DB: ${DB_NAME:-fab_db}
+#       POSTGRES_USER: ${DB_USER:-root}
+#       POSTGRES_PASSWORD: ${DB_PASSWORD:-root}
+#     volumes:
+#       - postgres_data:/var/lib/postgresql/data
+#     ports:
+#       - "5432:5432"
+#     healthcheck:
+#       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-root}"]
+#       interval: 5s
+#       timeout: 5s
+#       retries: 5
+
+#   init_db:
+#     build: .
+#     depends_on:
+#       db:
+#         condition: service_healthy
+#     env_file:
+#       - .env
+#     command: python init_db.py
+#     restart: on-failure
+
+#   scraper:
+#     build: .
+#     depends_on:
+#       init_db:
+#         condition: service_completed_successfully
+#     env_file:
+#       - .env
+#     command: python scrape_all.py
+#     restart: on-failure
+
+#   web:
+#     build: .
+#     depends_on:
+#       scraper:
+#         condition: service_completed_successfully
+#     env_file:
+#       - .env
+#     ports:
+#       - "5000:5000"
+#     command: gunicorn --bind 0.0.0.0:5000 app:app
+
+#   # bot:
+#   #   build: .
+#   #   depends_on:
+#   #     scraper:
+#   #       condition: service_completed_successfully
+#   #   env_file:
+#   #     - .env
+#   #   command: python bot.py
+
+# volumes:
+#   postgres_data:
 version: '3.8'
 
 services:
@@ -9,53 +70,18 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD:-root}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-root}"]
       interval: 5s
       timeout: 5s
       retries: 5
 
-  init_db:
-    build: .
-    depends_on:
-      db:
-        condition: service_healthy
-    env_file:
-      - .env
-    command: python init_db.py
-    restart: on-failure
-
-  scraper:
-    build: .
-    depends_on:
-      init_db:
-        condition: service_completed_successfully
-    env_file:
-      - .env
-    command: python scrape_all.py
-    restart: on-failure
-
   web:
     build: .
     depends_on:
-      scraper:
-        condition: service_completed_successfully
+      - db
     env_file:
-      - .env
+      - .env.production
     ports:
       - "5000:5000"
-    command: gunicorn --bind 0.0.0.0:5000 app:app
-
-  # bot:
-  #   build: .
-  #   depends_on:
-  #     scraper:
-  #       condition: service_completed_successfully
-  #   env_file:
-  #     - .env
-  #   command: python bot.py
-
-volumes:
-  postgres_data:
+    command: gunicorn --bind 0.0.0.0:5000 --workers 4 --timeout 120 app:app
