@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FAB Decklist Lookup</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .search-box {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 5px;
+        }
+        input[type="text"] {
+            padding: 8px;
+            width: 300px;
+            margin-right: 10px;
+        }
+        button {
+            padding: 8px 15px;
+            background: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0055aa;
+        }
+        #results {
+            margin-top: 20px;
+        }
+        .decklist {
+            margin: 15px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .decklist h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .error {
+            color: #d9534f;
+            font-weight: bold;
+        }
+        .hero {
+            display: inline-block;
+            padding: 3px 8px;
+            background: #5bc0de;
+            color: white;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <h1>Flesh and Blood Decklist Lookup</h1>
+    
+    <div class="search-box">
+        <h2>Search Player Decklists</h2>
+        <input type="text" id="playerName" placeholder="Enter player name">
+        <button onclick="searchPlayer()">Search</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        async function searchPlayer() {
+            const playerName = document.getElementById('playerName').value.trim();
+            if (!playerName) {
+                showError("Please enter a player name");
+                return;
+            }
+            
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p>Searching...</p>';
+            
+            try {
+                const response = await fetch(`/api/search?name=${encodeURIComponent(playerName)}`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    showError(data.error);
+                    return;
+                }
+                
+                displayResults(data);
+            } catch (error) {
+                showError("Network error - please try again");
+                console.error(error);
+            }
+        }
+        
+        function displayResults(data) {
+            const resultsDiv = document.getElementById('results');
+            
+            if (data.decklists.length === 0) {
+                resultsDiv.innerHTML = '<p class="error">No decklists found for this player</p>';
+                return;
+            }
+            
+            let html = `<h2>${data.player}'s Decklists</h2>`;
+            
+            data.decklists.forEach(decklist => {
+                html += `
+                    <div class="decklist">
+                        <h3>${decklist.tournament}</h3>
+                        <p><span class="hero">${decklist.hero}</span></p>
+                        <p><a href="${decklist.url}" target="_blank">View Decklist</a></p>
+                    </div>
+                `;
+            });
+            
+            resultsDiv.innerHTML = html;
+        }
+        
+        function showError(message) {
+            document.getElementById('results').innerHTML = 
+                `<p class="error">${message}</p>`;
+        }
+        
+        // Allow searching by pressing Enter
+        document.getElementById('playerName').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchPlayer();
+            }
+        });
+    </script>
+</body>
+</html>

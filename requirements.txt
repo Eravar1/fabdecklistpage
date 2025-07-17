@@ -1,0 +1,33 @@
+# Core dependencies
+discord.py==2.3.2
+python-dotenv==1.0.0
+
+# Database
+sqlalchemy==2.0.23
+psycopg2-binary==2.9.9
+alembic==1.12.1
+
+# Web scraping
+beautifulsoup4==4.12.2
+requests==2.31.0
+aiohttp==3.8.6
+
+# Data processing
+pandas==2.1.1
+numpy==1.26.0
+
+# Date/time
+python-dateutil==2.8.2
+pytz==2023.3.post1
+
+# Async utilities
+async-timeout==4.0.3
+
+# Development (optional)
+black==23.11.0
+flake8==6.1.0
+pytest==7.4.2
+
+# Web app (new additions)
+flask==3.0.0
+gunicorn==21.2.0
